@@ -26,7 +26,6 @@ input_number:
 # Synchronize controller and sliders
 automation:
   - alias: sync threshold on with controller
-    hide_entity: true
     trigger:
       - entity_id: sensor.threshold_on
         platform: state
@@ -37,7 +36,6 @@ automation:
         value: "{{ trigger.to_state.state | int }}"
 
   - alias: submit new 'on' value to controller
-    hide_entity: true
     trigger:
       - entity_id: input_number.threshold_temp_on
         platform: state
@@ -47,7 +45,6 @@ automation:
         value: "{{ trigger.to_state.state | int }}"
 
   - alias: sync threshold off with controller
-    hide_entity: true
     trigger:
       - entity_id: sensor.threshold_off
         platform: state
@@ -58,7 +55,6 @@ automation:
         value: "{{ trigger.to_state.state | int }}"
 
   - alias: submit new 'off' value to controller
-    hide_entity: true
     trigger:
       - entity_id: input_number.threshold_temp_off
         platform: state
