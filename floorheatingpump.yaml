@@ -1,6 +1,7 @@
 # Underfloor Heating Pump Controller
 # ESPHome - Sonoff S26 extended with Dallas temperature sensor
 # changed a bit, original: https://github.com/jeroenvdwaal/underfloor_heating_pump_controller
+# more info check: https://www.techjunky.nl/2022/01/14/underfloor-heating-pump-controller-with-sonoff-s26-and-esphome/
 #
 # Controls a underfloor heating-pump. When warm water is received from the
 # central heater, warm water is entering the pump via its pipes. This is
