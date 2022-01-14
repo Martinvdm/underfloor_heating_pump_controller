@@ -1,5 +1,6 @@
 # Underfloor Heating Pump Controller
-# ESPHome - Sonoff S20 extended with Dallas temperature sensor
+# ESPHome - Sonoff S26 extended with Dallas temperature sensor
+# changed a bit, original: https://github.com/jeroenvdwaal/underfloor_heating_pump_controller
 #
 # Controls a underfloor heating-pump. When warm water is received from the
 # central heater, warm water is entering the pump via its pipes. This is
@@ -13,22 +14,15 @@
 #   - threshold_on
 #   - threshold_off
 #
-# Multi room temperature control
-# If warm water is received by the pump, but the room is currently empty,
-# it is better to not start the pump. It may act as a valve. No warm water
-# will be spread through the pipes and this will save some energy.
-# For this, the controller can be set in manual mode. In this mode the pump
-# is controlled by a template switch. The temperature sensor is ignored.
-#
 # Anti corrosion
 # If the pump has not run for a longer period of time (days, weeks), it is
 # possible that it corrodes. The pump is not rotating anymore. The controller
 # makes sure that every day the pump runs for a minute (at midnight).
 #
-# The S20 green light indicates the mode. In automatic mode (default) flashes
+# The S26 green light indicates the mode. In automatic mode (default) flashes
 # slowly. In manual mode the green led is just on.
 #
-# The S20 push button sequences through the following options:
+# The S26 push button sequences through the following options:
 #   1- When in automatic mode
 #      - Manual mode is selected
 #      - Pump input switch is set to 'OFF'
@@ -45,7 +39,7 @@
 #
 
 esphome:
-  name: pump_controller
+  name: floorheatingpump
   platform: ESP8266
   board: esp01_1m
   esp8266_restore_from_flash: yes
@@ -60,7 +54,6 @@ wifi:
   password: !secret wifi_password
 
 ota:
-  password: !secret esphome_ota_password
 
 # Enable logging
 logger:
@@ -148,14 +141,14 @@ globals:
 
 dallas:
   - pin:
-      number: GPIO3
+      number: GPIO2
     update_interval: 1s
 
 sensor:
   - platform: dallas
     id: sensor_water_temperature
     name: "Water temperature"
-    address: 0xEC031564F652FF28
+    address: 0x0B3C01E076290828
     unit_of_measurement: "°C"
     accuracy_decimals: 1
     filters:
@@ -207,11 +200,11 @@ sensor:
       - delta: 0.1
 
 binary_sensor:
-  # The S20 push button can be used to select the automatic mode and
+  # The S26 push button can be used to select the automatic mode and
   # the manual demand. This is an alternative for both template switches
   # sw_automatic_mode and sw_on_off.
   - platform: gpio
-    id: s20_push_button
+    id: s26_push_button
     pin:
       number: GPIO0
       mode: INPUT_PULLUP
@@ -249,13 +242,13 @@ binary_sensor:
   - platform: template
     name: "Pump"
     id: sensor_pump_state
-    lambda: return id(s20_relay).state;
+    lambda: return id(s26_relay).state;
 
 switch:
   # relay, switches pump on and off
   - platform: gpio
     pin: GPIO12
-    id: s20_relay
+    id: s26_relay
 
   # Boolean input to toggle between manual or automatic mode
   - platform: template
@@ -330,10 +323,10 @@ script:
           }
 
           /* only send commands when needed */
-          if (demand && !id(s20_relay).state) {
-            id(s20_relay).turn_on();
-          } else if (!demand && id(s20_relay).state){
-            id(s20_relay).turn_off();
+          if (demand && !id(s26_relay).state) {
+            id(s26_relay).turn_on();
+          } else if (!demand && id(s26_relay).state){
+            id(s26_relay).turn_off();
           }
 
   - id: led_signaling
@@ -343,26 +336,26 @@ script:
       #  - automatic mode, led blinks
       - lambda: |-
           if (id(g_automatic_mode)){
-            auto call = id(s20_led).turn_on();
+            auto call = id(s26_led).turn_on();
             call.set_effect("auto_effect");
             call.perform();
           } else {
-            auto call = id(s20_led).turn_on();
+            auto call = id(s26_led).turn_on();
             call.set_effect("none");
             call.perform();
           }
 
 output:
   - platform: esp8266_pwm
-    id: s20_green_led
+    id: s26_green_led
     pin:
       number: GPIO13
       inverted: True
 
 light:
   - platform: monochromatic
-    output: s20_green_led
-    id: s20_led
+    output: s26_green_led
+    id: s26_led
     effects:
       - strobe:
           name: auto_effect
