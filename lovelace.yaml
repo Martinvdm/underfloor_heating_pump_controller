@@ -1,26 +1,25 @@
-views:
-  - badges: []
+cards:
+### Floor Heating Pump
+  - type: entities
+    title: Vloerverwarming Pomp
+    entities:
+      - entity: input_number.floorheatingpump_threshold_temp_off
+        name: Temp Pomp uit
+      - entity: input_number.floorheatingpump_threshold_temp_on
+        name: Temp Pomp aan
+  - type: vertical-stack
+    #title: Vloerverwarming Pomp
     cards:
-      - type: vertical-stack
-        title: Underfloor heating pump
+      - type: horizontal-stack
         cards:
-          - type: horizontal-stack
-            cards:
-              - type: entities
-                entities:
-                  - entity: switch.manual_automatic
-                    name: Automatic
-                  - entity: switch.on_off
-                    name: Manual override
-                  - entity: binary_sensor.pump_state
-              - type: sensor
-                entity: sensor.water_temperature
-                graph: line
-                name: Water temperature
           - type: entities
-            title: Thresholds automatic mode
             entities:
-              - entity: input_number.threshold_temp_off
-                name: Temperature pump off
-              - entity: input_number.threshold_temp_on
-                name: Temperature pump on
+              - entity: switch.floorheatingpump_manual_automatic
+                name: Automatic
+              - entity: switch.floorheatingpump_on_off
+                name: Manual override
+              - entity: binary_sensor.floorheatingpump_pump_state
+          - type: sensor
+            entity: sensor.floorheatingpump_water_temperature
+            graph: line
+            name: Water Termperatuur
