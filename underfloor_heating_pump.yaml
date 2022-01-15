@@ -62,3 +62,30 @@ automation:
       service: esphome.pump_controller_threshold_off
       data_template:
         value: "{{ trigger.to_state.state | int }}"
+
+  - alias: FloorHeatingPump Anti Corrosion
+    trigger:
+      platform: time
+      at: '01:30:00'
+    condition:
+      - condition: state
+        entity_id: binary_sensor.floorheatingpump_pump_state
+        state: 'off'
+        for:
+          hours: 24    
+    action:
+    #turn off automatic mode
+    - service: switch.turn_off
+      entity_id: switch.floorheatingpump_manual_automatic 
+    # turn on the pump      
+    - service: switch.turn_on
+      entity_id: switch.floorheatingpump_on_off 
+    # wait for 1 min      
+    - delay: 
+        minutes: 1
+    # turn off the pump
+    - service: switch.turn_off
+      entity_id: switch.floorheatingpump_on_off
+    # turn on automatic mode
+    - service: switch.turn_on
+      entity_id: switch.floorheatingpump_manual_automatic 
