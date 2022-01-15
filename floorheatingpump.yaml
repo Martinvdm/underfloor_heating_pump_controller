@@ -39,6 +39,9 @@
 # the controller switches over to automatic mode.
 #
 
+#https://github.com/Martinvdm/underfloor_heating_pump_controller
+#
+
 esphome:
   name: floorheatingpump
   platform: ESP8266
@@ -52,7 +55,10 @@ esphome:
 
 wifi:
   ssid: !secret wifi_ssid
-  password: !secret wifi_password
+  password: !secret wifi_pass
+  ap:
+    ssid: "Floorheatingpump"
+    password: "wvkU8XCu4CEw"
 
 ota:
 
@@ -61,7 +67,6 @@ logger:
 
 # Enable Home Assistant API
 api:
-  password: !secret ha_api_password
 
   services:
     - service: threshold_off
@@ -128,12 +133,6 @@ globals:
     restore_value: no
     initial_value: "false"
 
-  # true in case anti corrosion is active
-  - id: g_pump_demand_anti_corr
-    type: boolean
-    restore_value: no
-    initial_value: "false"
-
   # demand based on water temperature
   - id: g_pump_demand_automatic
     type: boolean
@@ -148,9 +147,10 @@ dallas:
 sensor:
   - platform: dallas
     id: sensor_water_temperature
-    name: "Water temperature"
+    name: Water temperature
     address: 0x0B3C01E076290828
     unit_of_measurement: "°C"
+    device_class: temperature
     accuracy_decimals: 1
     filters:
       - delta: 0.1
@@ -181,7 +181,7 @@ sensor:
             }
 
   - platform: template
-    name: "Threshold off"
+    name: Threshold off
     id: sensor_threshold_temp_off
     unit_of_measurement: "°C"
     accuracy_decimals: 1
@@ -192,7 +192,7 @@ sensor:
 
   - platform: template
     id: sensor_threshold_temp_on
-    name: "Threshold on"
+    name: Threshold on
     unit_of_measurement: "°C"
     accuracy_decimals: 1
     lambda: return id(g_threshold_temp_on);
@@ -241,7 +241,7 @@ binary_sensor:
 
   # template sensor to publish pump state
   - platform: template
-    name: "Pump"
+    name: Pump
     id: sensor_pump_state
     lambda: return id(s26_relay).state;
 
@@ -271,7 +271,7 @@ switch:
 
   # Boolean input to control manual demand
   - platform: template
-    name: "On/Off"
+    name: On/Off
     id: sw_on_off
     lambda: return id(g_pump_demand_manual);
     turn_on_action:
@@ -285,22 +285,6 @@ switch:
           value: "false"
       - script.execute: controller
 
-time:
-  - platform: sntp
-    on_time:
-      # schedule anti corrosion action, once a day
-      - hours: 1
-        then:
-          - globals.set:
-              id: g_pump_demand_anti_corr
-              value: "true"
-          - script.execute: controller
-          - delay: 60s
-          - globals.set:
-              id: g_pump_demand_anti_corr
-              value: "false"
-          - script.execute: controller
-
 script:
   # script for calculating the demand for the pump. Should
   # it run or not. Applies the changes to the relay.
@@ -310,11 +294,7 @@ script:
           /* calculate if pump should be on or not */
           bool demand = false;
 
-          if (id(g_pump_demand_anti_corr)){
-            /* anti corrosion run */
-            demand = true;
-          } 
-          else if (!id(g_automatic_mode)){
+          if (!id(g_automatic_mode)){
             /* manual mode */
             demand = id(g_pump_demand_manual);
           }
